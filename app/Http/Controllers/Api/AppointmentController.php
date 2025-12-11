@@ -2,64 +2,101 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use Illuminate\Http\Request;
 
-class AppointmentController
+class AppointmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return Appointment::all();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $data =$request->validate([
-            'patient_name'=>'required|string|max:255',
-            'doctor_name'=>'required|string|max:255',
-            'date'=>'required|date|date_format:Y-m-d',
-            'time'=>'required|date_format:H:i',
-            'reason'=>'nullable|string',
-            'status'=>'required|in:pendiente,realizada,cancelada'
-        ]);
-        return Appointment::create($data);
+        try {
+            $data = $request->validate([
+                'patient_name' => 'required|string|max:255',
+                'doctor_name'  => 'required|string|max:255',
+                'date'         => 'required|date',
+                'time'         => 'required|date_format:H:i',
+                'reason'       => 'nullable|string',
+                'status'       => 'required|in:pendiente,realizada,cancelada',
+            ],
+             ['patient_name.required' => 'Es obligatorio el nombre del paciente.',
+                'doctor_name.required'  => 'El nombre del doctor es obligatorio.',
+                'date.required'         => 'Debe poner una fecha.',
+                'date.date'             => 'La fecha debe tener el formato válido.',
+                'time.required'         => 'Debe poner una hora.',
+                'status.required'       => 'El estado es obligatorio.',
+                'status.in'             => 'El estado debe ser pendiente, realizada o cancelada.', ]);
+
+            $appointment = Appointment::create($data);
+
+            return response()->json($appointment, 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 400);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(appointment $appointment)
+    public function show($id)
     {
+        $appointment = Appointment::find($id);
+
+        if (!$appointment) {
+            return response()->json([
+                'error' => 'La cita no existe'
+            ], 404);
+        }
+
         return $appointment;
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request,Appointment $appointment)
+    public function update(Request $request, $id)
     {
-        $data =$request->validate([
-            'patient_name'=>'required|string|max:255',
-            'doctor_name'=>'required|string|max:255',
-            'date'=>'required|date|date_format:Y-m-d',
-            'time'=>'required|date_format:H:i',
-            'reason'=>'nullable|string',
-            'status'=>'required|in:pendiente,realizada,cancelada'
-        ]);
+        try {
+            $appointment = Appointment::find($id);
+
+            if (!$appointment) {
+                return response()->json(['error' => 'Cita inexistente'], 404);
+            }
+
+            $data = $request->validate([
+                'patient_name' => 'sometimes|required|string|max:255',
+                'doctor_name'  => 'sometimes|required|string|max:255',
+                'date'         => 'sometimes|required|date',
+                'time'         => 'sometimes|required',
+                'reason'       => 'nullable|string',
+                'status'       => 'sometimes|required|in:pendiente,realizada,cancelada',
+         ]   );
+
+            $appointment->update($data);
+
+            return response()->json($appointment, 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error',
+            ], 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Appointment $appointment)
+    public function destroy($id)
     {
+        $appointment = Appointment::find($id);
+
+        if (!$appointment) {
+            return response()->json([
+                'error' => 'La cita no existe'
+            ], 404);
+        }
+
         $appointment->delete();
-        return response()->json(['message' => 'Cita eliminada correctamente']);
+
+        return response()->json(['message' => 'Cita eliminada correctamente'], 200);
     }
 }
