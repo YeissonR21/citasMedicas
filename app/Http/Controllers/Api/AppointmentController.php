@@ -23,6 +23,7 @@ class AppointmentController extends Controller
                 'time'         => 'required|date_format:H:i',
                 'reason'       => 'nullable|string',
                 'status'       => 'required|in:pendiente,realizada,cancelada',
+                'consultorio'  => 'required|in:consultorio201,consultorio202,consultorio203'
             ],
              ['patient_name.required' => 'Es obligatorio el nombre del paciente.',
                 'doctor_name.required'  => 'El nombre del doctor es obligatorio.',
@@ -30,7 +31,9 @@ class AppointmentController extends Controller
                 'date.date'             => 'La fecha debe tener el formato válido.',
                 'time.required'         => 'Debe poner una hora.',
                 'status.required'       => 'El estado es obligatorio.',
-                'status.in'             => 'El estado debe ser pendiente, realizada o cancelada.', ]);
+                'status.in'             => 'El estado debe ser pendiente, realizada o cancelada.',
+                'consultorio.required'  => 'El consultorio es obligatorio.',
+                'consultorio.in'        => 'El consultorio debe ser consultorio201, consultorio202 o consultorio203.']);
 
             $appointment = Appointment::create($data);
 
@@ -72,6 +75,7 @@ class AppointmentController extends Controller
                 'time'         => 'sometimes|required',
                 'reason'       => 'nullable|string',
                 'status'       => 'sometimes|required|in:pendiente,realizada,cancelada',
+                'consultorio'  => 'sometimes|required|in:consultorio201,consultorio202,consultorio203'
          ]   );
 
             $appointment->update($data);

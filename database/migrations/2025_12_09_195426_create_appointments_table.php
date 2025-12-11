@@ -19,6 +19,7 @@ return new class extends Migration
             $table->time('time');
             $table->text('reason')->nullable();
             $table->enum('status',['pendiente','realizada','cancelada'])->default('pendiente');
+            $table->enum('consultorio',['consultorio201','consultorio202','consultorio203']);
             $table->timestamps();
         });
     }
